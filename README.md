@@ -2,6 +2,10 @@
 
 Status Zero is a live public dashboard for monitoring the official service status of ChatGPT and Claude.
 
+## Open the dashboard
+
+**[Launch Status Zero](https://thisisskay.github.io/status-zero/)**
+
 ## Live dashboard
 
 The public GitHub Pages site is served from `index.html`. It uses the official OpenAI and Anthropic status feeds and refreshes automatically every 60 seconds.
