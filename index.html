@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Live status for ChatGPT and Claude.">
+<meta name="description" content="Live status for ChatGPT, Claude, Grok, Copilot, and Le Chat.">
 <meta property="og:title" content="Status Zero — AI Service Monitor">
-<meta property="og:description" content="Live status for ChatGPT and Claude.">
+<meta property="og:description" content="Live status for ChatGPT, Claude, Grok, Copilot, and Le Chat.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://thisisskay.github.io/status-zero/">
 <meta property="og:image" content="https://thisisskay.github.io/status-zero/public/status-zero-og.png">
@@ -15,7 +15,7 @@
 <meta property="og:image:alt" content="Status Zero ASCII terminal service monitor">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Status Zero — AI Service Monitor">
-<meta name="twitter:description" content="Live status for ChatGPT and Claude.">
+<meta name="twitter:description" content="Live status for ChatGPT, Claude, Grok, Copilot, and Le Chat.">
 <meta name="twitter:image" content="https://thisisskay.github.io/status-zero/public/status-zero-og.png">
 <title>Status Zero — AI Service Monitor</title>
 <style>
@@ -115,8 +115,12 @@ button,a{font:inherit}
 </div>
 <script>
 const SOURCES=[
- {id:'openai',name:'ChatGPT',vendor:'OpenAI',url:'https://status.openai.com/api/v2/summary.json',page:'https://status.openai.com/',components:['Conversations','Login','Search','GPTs']},
- {id:'claude',name:'Claude',vendor:'Anthropic',url:'https://status.claude.com/api/v2/summary.json',page:'https://status.claude.com/',components:['claude.ai','Claude API (api.anthropic.com)','Claude Code']}
+ {id:'openai',icon:'O',name:'ChatGPT',vendor:'OpenAI',url:'https://status.openai.com/api/v2/summary.json',page:'https://status.openai.com/',components:['Conversations','Login','Search','GPTs']},
+ {id:'claude',icon:'A',name:'Claude',vendor:'Anthropic',url:'https://status.claude.com/api/v2/summary.json',page:'https://status.claude.com/',components:['claude.ai','Claude API (api.anthropic.com)','Claude Code']},
+ {id:'grok',icon:'X',name:'Grok',vendor:'xAI',url:'https://status.x.ai/api/v2/summary.json',page:'https://status.x.ai/',components:null},
+ {id:'mscopilot',icon:'Co',name:'Copilot',vendor:'Microsoft',url:'https://copilot.statuspage.io/api/v2/summary.json',page:'https://copilot.statuspage.io/',components:null},
+ {id:'ghcopilot',icon:'Gh',name:'GitHub Copilot',vendor:'GitHub',url:'https://www.githubstatus.com/api/v2/summary.json',page:'https://www.githubstatus.com/',components:['Copilot']},
+ {id:'mistral',icon:'Mi',name:'Le Chat',vendor:'Mistral AI',url:'https://status.mistral.ai/api/v2/summary.json',page:'https://status.mistral.ai/',components:null}
 ];
 let seconds=60;
 const stateClass=indicator=>indicator==='none'?'healthy':['minor','maintenance'].includes(indicator)?'warning':['major','critical'].includes(indicator)?'danger':'unknown';
@@ -127,13 +131,13 @@ function renderCards(providers){
  document.getElementById('cards').innerHTML=providers.map(provider=>{
   const type=stateClass(provider.indicator);
   const components=provider.components.length?provider.components.map(component=>`<div class="component"><span class="component-name">${component.name}</span><span class="component-state ${component.status}"><i></i>${pretty(component.status)}</span></div>`).join(''):'<div class="component"><span class="component-name">Official endpoint</span><span class="component-state"><i></i>No response</span></div>';
-  return `<article class="card ${type}"><header class="card-head"><div class="card-title"><span class="card-icon">${provider.id==='openai'?'O':'A'}</span><div><div class="card-eyebrow">${provider.vendor}</div><h2>${provider.name}</h2></div></div><span class="badge"><i></i>${stateLabel(provider.indicator)}</span></header><div class="components">${components}</div><footer class="card-foot"><span>Updated ${provider.updatedAt?formatTime(new Date(provider.updatedAt)):'unknown'}</span><a href="${provider.page}" target="_blank" rel="noreferrer">Status page ↗</a></footer></article>`;
+  return `<article class="card ${type}"><header class="card-head"><div class="card-title"><span class="card-icon">${provider.icon}</span><div><div class="card-eyebrow">${provider.vendor}</div><h2>${provider.name}</h2></div></div><span class="badge"><i></i>${stateLabel(provider.indicator)}</span></header><div class="components">${components}</div><footer class="card-foot"><span>Updated ${provider.updatedAt?formatTime(new Date(provider.updatedAt)):'unknown'}</span><a href="${provider.page}" target="_blank" rel="noreferrer">Status page ↗</a></footer></article>`;
  }).join('');
 }
 async function check(){
  const button=document.getElementById('refresh'),icon=document.getElementById('refreshIcon'),label=document.getElementById('refreshText');
  button.disabled=true;icon.className='spin';label.textContent='Checking…';
- const providers=await Promise.all(SOURCES.map(async source=>{try{const response=await fetch(source.url,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();return{...source,indicator:data.status?.indicator||'unknown',updatedAt:data.page?.updated_at||null,components:source.components.map(name=>(data.components||[]).find(component=>component.name===name)).filter(Boolean)}}catch{return{...source,indicator:'unknown',updatedAt:null,components:[]}}}));
+ const providers=await Promise.all(SOURCES.map(async source=>{try{const response=await fetch(source.url,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();const resolved=source.components?source.components.map(name=>(data.components||[]).find(component=>component.name===name)).filter(Boolean):(data.components||[]).filter(component=>!component.group).slice(0,6);return{...source,indicator:data.status?.indicator||'unknown',updatedAt:data.page?.updated_at||null,components:resolved}}catch{return{...source,indicator:'unknown',updatedAt:null,components:[]}}}));
  const classes=providers.map(provider=>stateClass(provider.indicator));
  const overallEl=document.getElementById('overall'),iconEl=document.getElementById('overallIcon');
  if(classes.includes('danger')||classes.includes('unknown')){overallEl.textContent='Attention needed';overallEl.className='banner-value bad';iconEl.textContent='⚠';iconEl.className='banner-icon bad';}
