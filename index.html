@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>AI Service Monitor — Deep Black</title>
+<title>Status Zero — AI Service Monitor</title>
 <style>
 :root{--black:#090b0a;--chrome:#111311;--panel:#151815;--editor:#1b1e1b;--editor-2:#202420;--line:#303530;--muted:#858d85;--text:#e8ede8;--green:#8dcc00;--green-2:#b6f238;--cyan:#66d9ef;--pink:#f92672;--yellow:#e6db74;--orange:#fd971f;--red:#ff5f56;--shadow:rgba(0,0,0,.48)}
 *{box-sizing:border-box}html,body{min-height:100%;margin:0}body{background:#050605;color:var(--text);font-family:Consolas,"Cascadia Code","Courier New",monospace;font-size:13px;padding:18px}button,a{font:inherit}.app{background:var(--editor);border:1px solid #343a34;box-shadow:0 24px 70px var(--shadow);display:grid;grid-template-rows:auto auto auto 1fr auto;max-width:1440px;min-height:calc(100vh - 36px);margin:auto;overflow:hidden}
@@ -23,18 +23,18 @@
 </head>
 <body>
 <div class="app">
-  <header class="titlebar"><div class="app-title"><span class="np-mark">N</span><span>service_health.json — AI Operations Monitor</span></div><div class="window-controls" aria-hidden="true"><i></i><i></i><i></i></div></header>
+  <header class="titlebar"><div class="app-title"><span class="np-mark">N</span><span>status_zero.json — Status Zero</span></div><div class="window-controls" aria-hidden="true"><i></i><i></i><i></i></div></header>
   <div class="menubar"><div class="menus"><span>File</span><span>Edit</span><span>Search</span><span>View</span><span>Monitor</span><span>Tools</span><span>Help</span></div><div class="connection"><span class="connection-dot"></span>OFFICIAL FEEDS</div></div>
   <div class="toolbar"><div class="tools" aria-hidden="true"><span class="tool green">+</span><span class="tool">□</span><span class="tool">↧</span><span class="tool-separator"></span><span class="tool">⌕</span><span class="tool">≡</span><span class="tool green">▶</span></div><button class="refresh-btn" id="refresh"><span id="refreshIcon">↻</span><span id="refreshText">RUN CHECK</span></button></div>
   <div class="workspace">
     <aside class="sidebar">
       <div class="side-title">WORKSPACE</div>
-      <div class="tree"><div class="tree-row"><span class="folder">▾</span><strong>AI_STATUS</strong></div><div class="tree-row indent active"><span class="file-json">{ }</span>service_health.json</div><div class="tree-row indent"><span class="file-json">{ }</span>openai.status</div><div class="tree-row indent"><span class="file-json">{ }</span>anthropic.status</div></div>
+      <div class="tree"><div class="tree-row"><span class="folder">▾</span><strong>STATUS_ZERO</strong></div><div class="tree-row indent active"><span class="file-json">{ }</span>status_zero.json</div><div class="tree-row indent"><span class="file-json">{ }</span>openai.status</div><div class="tree-row indent"><span class="file-json">{ }</span>anthropic.status</div></div>
       <div class="side-section"><div class="side-label">STATUS LEGEND</div><div class="legend"><i class="ok"></i>Operational</div><div class="legend"><i class="warn"></i>Degraded</div><div class="legend"><i class="down"></i>Unavailable</div></div>
       <div class="side-section"><div class="side-label">DATA SOURCES</div><div class="tree-row indent">↗ OpenAI official</div><div class="tree-row indent">↗ Anthropic official</div></div>
     </aside>
     <section class="editor-shell">
-      <div class="tabs"><div class="tab active"><span class="tab-dot"></span>service_health.json <span class="tab-x">×</span></div><div class="tab">monitor.log <span class="tab-x">×</span></div></div>
+      <div class="tabs"><div class="tab active"><span class="tab-dot"></span>status_zero.json <span class="tab-x">×</span></div><div class="tab">monitor.log <span class="tab-x">×</span></div></div>
       <section class="overview" aria-label="Status overview"><div class="metric"><div class="metric-label">Overall state</div><div class="metric-value green" id="overall">CHECKING</div><div class="metric-sub">Combined provider health</div></div><div class="metric"><div class="metric-label">Operational</div><div class="metric-value" id="operationalCount">—</div><div class="metric-sub">Monitored services</div></div><div class="metric"><div class="metric-label">Issues</div><div class="metric-value" id="issueCount">—</div><div class="metric-sub">Active degradations</div></div><div class="metric"><div class="metric-label">Last execution</div><div class="metric-value small" id="lastCheck">PENDING</div><div class="metric-sub" id="nextCheck">Next check in 60s</div></div></section>
       <div class="editor">
         <div class="code-comment">// Real-time AI service telemetry from official status endpoints</div>

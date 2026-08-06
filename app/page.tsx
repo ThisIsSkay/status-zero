@@ -57,7 +57,7 @@ export default function Home() {
       <div className="sky-decor sky-decor-one" /><div className="sky-decor sky-decor-two" />
       <div className="star-field" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span><span>✧</span><span>·</span></div>
       <nav className="topbar" aria-label="Main navigation">
-        <a className="brand" href="#top" aria-label="AI Weather Bureau home"><span className="brand-mark">✦</span><span>AI Weather Bureau<small>Forecasting digital magic</small></span></a>
+        <a className="brand" href="#top" aria-label="Status Zero home"><span className="brand-mark">✦</span><span>Status Zero<small>Monitoring digital signals</small></span></a>
         <div className="live-pill"><span className="live-dot" />Live official signals</div>
       </nav>
       <section className="hero" id="top">
