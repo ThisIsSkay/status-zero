@@ -41,5 +41,6 @@ test("standalone dashboards are branded and self-contained", async () => {
   }
 
   assert.equal(index, professional);
+  assert.match(professional, /public\/status-zero-og\.png/);
   assert.match(packageJson, /"name"\s*:\s*"status-zero"/);
 });
