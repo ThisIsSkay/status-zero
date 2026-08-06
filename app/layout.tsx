@@ -7,15 +7,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const host = incoming.get("x-forwarded-host") ?? incoming.get("host") ?? "localhost:3000";
   const protocol = incoming.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const origin = `${protocol}://${host}`;
-  const title = "AI Weather — ChatGPT & Claude Status";
-  const description = "A whimsical live dashboard for checking the official status of ChatGPT and Claude.";
+  const title = "Status Zero — ChatGPT & Claude Status";
+  const description = "Status Zero monitors the live official status of ChatGPT and Claude.";
   return {
     title,
     description,
     metadataBase: new URL(origin),
     icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
-    openGraph: { title, description, type: "website", images: [{ url: `${origin}/og.png`, width: 1672, height: 941, alt: "AI Weather status dashboard for ChatGPT and Claude" }] },
-    twitter: { card: "summary_large_image", title, description, images: [`${origin}/og.png`] },
+    openGraph: { title, description, type: "website", images: [{ url: `${origin}/status-zero-og.png`, width: 1672, height: 941, alt: "Status Zero AI service monitor for ChatGPT and Claude" }] },
+    twitter: { card: "summary_large_image", title, description, images: [`${origin}/status-zero-og.png`] },
   };
 }
 
