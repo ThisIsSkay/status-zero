@@ -19,76 +19,134 @@
 <meta name="twitter:image" content="https://thisisskay.github.io/status-zero/public/status-zero-og.png">
 <title>Status Zero — AI Service Monitor</title>
 <style>
-:root{--black:#090b0a;--chrome:#111311;--panel:#151815;--editor:#1b1e1b;--editor-2:#202420;--line:#303530;--muted:#858d85;--text:#e8ede8;--green:#8dcc00;--green-2:#b6f238;--cyan:#66d9ef;--pink:#f92672;--yellow:#e6db74;--orange:#fd971f;--red:#ff5f56;--shadow:rgba(0,0,0,.48)}
-*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{background:#050605;color:var(--text);font-family:Consolas,"Cascadia Code","Courier New",monospace;font-size:13px;padding:18px}button,a{font:inherit}.app{background:var(--editor);border:1px solid #343a34;box-shadow:0 24px 70px var(--shadow);display:grid;grid-template-rows:auto auto auto 1fr auto;max-width:1440px;min-height:calc(100vh - 36px);margin:auto;overflow:hidden}
-.titlebar{align-items:center;background:linear-gradient(#171a17,#101210);border-bottom:1px solid #000;display:flex;height:38px;justify-content:space-between;padding:0 12px}.app-title{align-items:center;color:#cfd5cf;display:flex;font-family:Segoe UI,Arial,sans-serif;font-size:12px;gap:10px}.np-mark{align-items:center;background:var(--green);border-radius:2px;color:#0b0d0b;display:flex;font-weight:900;height:21px;justify-content:center;transform:skew(-8deg);width:21px}.window-controls{display:flex;gap:13px}.window-controls i{background:#4b504b;border-radius:50%;display:block;height:8px;width:8px}.window-controls i:nth-child(2){background:#d9a62e}.window-controls i:nth-child(3){background:#bf4e4e}
-.menubar{align-items:center;background:var(--chrome);border-bottom:1px solid #292d29;color:#abb2ab;display:flex;font-family:Segoe UI,Arial,sans-serif;font-size:12px;height:30px;justify-content:space-between;padding:0 14px}.menus{display:flex;gap:20px}.connection{align-items:center;color:#8e978e;display:flex;font-family:Consolas,monospace;font-size:11px;gap:7px}.connection-dot{background:var(--green);border-radius:50%;box-shadow:0 0 8px rgba(141,204,0,.65);height:7px;width:7px}
-.toolbar{align-items:center;background:#171a17;border-bottom:1px solid #080908;display:flex;height:34px;justify-content:space-between;padding:0 12px}.tools{align-items:center;display:flex;gap:7px}.tool{align-items:center;background:#202420;border:1px solid #383d38;border-radius:2px;color:#aeb5ae;display:flex;height:22px;justify-content:center;width:25px}.tool.green{color:var(--green-2)}.tool-separator{background:#343934;height:20px;margin:0 3px;width:1px}.refresh-btn{align-items:center;background:#1b2118;border:1px solid #4e651c;border-radius:2px;color:var(--green-2);cursor:pointer;display:flex;font-weight:700;gap:8px;height:25px;padding:0 11px}.refresh-btn:hover{background:#27341c;border-color:var(--green)}.refresh-btn:disabled{cursor:wait;opacity:.6}.spin{animation:spin .75s linear infinite;display:inline-block}
-.workspace{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:0}.sidebar{background:#101210;border-right:1px solid #2e332e;min-width:0}.side-title{background:#181b18;border-bottom:1px solid #2e332e;color:#858d85;font-family:Segoe UI,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;padding:10px 12px}.tree{padding:8px 0}.tree-row{align-items:center;color:#b6bcb6;display:flex;gap:7px;height:27px;padding:0 13px}.tree-row:hover{background:#1b1f1b}.tree-row.active{background:#253019;border-left:2px solid var(--green);color:#e5f3d3;padding-left:11px}.tree-row.indent{color:#939a93;padding-left:32px}.folder{color:#d8ae45}.file-json{color:var(--yellow)}.side-section{border-top:1px solid #292e29;margin-top:10px;padding-top:9px}.side-label{color:#656d65;font-size:10px;letter-spacing:.1em;padding:4px 13px 7px}.legend{align-items:center;color:#858d85;display:flex;font-size:11px;gap:8px;padding:5px 14px}.legend i{border-radius:50%;height:7px;width:7px}.legend .ok{background:var(--green)}.legend .warn{background:var(--orange)}.legend .down{background:var(--red)}
-.editor-shell{display:grid;grid-template-rows:auto auto 1fr;min-width:0}.tabs{align-items:end;background:#101210;border-bottom:1px solid #2c312c;display:flex;height:35px;overflow:hidden}.tab{align-items:center;background:#171a17;border-right:1px solid #303530;color:#969e96;display:flex;gap:8px;height:34px;padding:0 14px;white-space:nowrap}.tab.active{background:var(--editor);border-top:2px solid var(--green);color:#e1e7e1}.tab-dot{background:var(--yellow);border-radius:50%;height:6px;width:6px}.tab-x{color:#687068;margin-left:10px}.overview{align-items:center;background:#161916;border-bottom:1px solid #2d322d;display:grid;gap:1px;grid-template-columns:repeat(4,minmax(120px,1fr));min-height:76px}.metric{border-right:1px solid #2d322d;padding:13px 18px}.metric:last-child{border-right:0}.metric-label{color:#778077;font-family:Segoe UI,Arial,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase}.metric-value{color:#f0f4f0;font-size:20px;font-weight:700;margin-top:5px}.metric-value.green{color:var(--green-2)}.metric-value.small{font-size:13px;margin-top:9px}.metric-sub{color:#717971;font-size:10px;margin-top:3px}
-.editor{background:linear-gradient(90deg,#151815 0 47px,#2a2e2a 47px 48px,var(--editor) 48px);overflow:auto;padding:20px 20px 32px 67px;position:relative}.editor::before{color:#535b53;content:"01\A 02\A 03\A 04\A 05\A 06\A 07\A 08\A 09\A 10\A 11\A 12\A 13\A 14\A 15\A 16\A 17\A 18\A 19\A 20\A 21\A 22\A 23\A 24\A 25\A 26\A 27\A 28\A 29\A 30";font-size:11px;left:13px;line-height:22px;position:absolute;text-align:right;top:20px;white-space:pre}.code-comment{color:#757d75;line-height:22px}.syntax-key{color:var(--cyan)}.syntax-string{color:var(--yellow)}.syntax-number{color:#ae81ff}.syntax-bool{color:var(--pink)}.syntax-brace{color:#c8cec8}.dashboard-grid{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(300px,1fr));margin:13px 0 16px;max-width:1100px}.provider-card{background:#131613;border:1px solid #353b35;box-shadow:0 5px 18px rgba(0,0,0,.18);min-width:0}.provider-head{align-items:center;background:#191d19;border-bottom:1px solid #323732;display:flex;justify-content:space-between;padding:14px 16px}.provider-name{align-items:center;display:flex;gap:11px}.provider-icon{align-items:center;background:#232923;border:1px solid #424942;color:var(--green-2);display:flex;font-size:15px;height:31px;justify-content:center;width:31px}.provider-eyebrow{color:#717971;font-size:9px;letter-spacing:.13em;text-transform:uppercase}.provider-head h2{font-size:16px;margin:3px 0 0}.status-badge{align-items:center;background:#1b2615;border:1px solid #405c19;color:var(--green-2);display:flex;font-size:10px;font-weight:700;gap:7px;padding:6px 8px;text-transform:uppercase}.status-badge i{background:var(--green);border-radius:50%;height:6px;width:6px}.provider-card.warning .status-badge{background:#2b2112;border-color:#6d4c17;color:#ffb340}.provider-card.warning .status-badge i{background:var(--orange)}.provider-card.danger .status-badge,.provider-card.unknown .status-badge{background:#2b1717;border-color:#6e2929;color:#ff7770}.provider-card.danger .status-badge i,.provider-card.unknown .status-badge i{background:var(--red)}.code-block{border-bottom:1px solid #2c312c;color:#bcc3bc;line-height:22px;padding:12px 16px}.component-list{padding:5px 0}.component{align-items:center;border-bottom:1px solid #242824;display:grid;gap:12px;grid-template-columns:1fr auto;padding:10px 16px}.component:last-child{border-bottom:0}.component-name{color:#cbd1cb;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.component-state{align-items:center;color:#8dcc00;display:flex;font-size:10px;gap:7px;text-transform:uppercase}.component-state i{background:currentColor;border-radius:50%;height:6px;width:6px}.component-state:not(.operational){color:var(--orange)}.provider-foot{align-items:center;background:#101310;border-top:1px solid #2d322d;color:#6f776f;display:flex;font-size:10px;justify-content:space-between;padding:9px 16px}.provider-foot a{color:#8fae58;text-decoration:none}.provider-foot a:hover{color:var(--green-2);text-decoration:underline}
-.history{background:#121512;border:1px solid #323732;max-width:1100px;padding:13px 16px}.history-head{align-items:center;display:flex;justify-content:space-between}.history-title{color:#c7cdc7;font-size:11px;font-weight:700}.history-note{color:#697169;font-size:10px}.history-bars{align-items:end;display:flex;gap:5px;height:42px;margin-top:11px}.history-bar{background:#34401e;border-top:2px solid var(--green);flex:1;min-width:7px;transition:height .25s}.history-bar.warn{background:#493519;border-color:var(--orange)}.history-bar.down{background:#482020;border-color:var(--red)}
-.statusbar{align-items:center;background:#151815;border-top:1px solid #303530;color:#8b938b;display:flex;font-family:Segoe UI,Arial,sans-serif;font-size:10px;height:25px;justify-content:space-between;padding:0 10px}.status-left,.status-right{display:flex;gap:18px}.status-ready{color:var(--green-2)}
+:root{--bg:#0a0b0d;--surface:#141619;--surface-2:#1b1e22;--border:#2a2e33;--text:#eef1f3;--muted:#8b9199;--green:#3ddc84;--green-dim:#28c76f;--orange:#ffb020;--red:#ff5c5c;--shadow:rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:ui-monospace,"SF Mono",Consolas,"Cascadia Code","Courier New",monospace;-webkit-font-smoothing:antialiased;line-height:1.45}
+button,a{font:inherit}
+.wrap{margin:0 auto;max-width:760px;padding:20px 16px 40px}
+
+.site-header{align-items:center;display:flex;gap:10px;justify-content:space-between;padding:6px 2px 22px}
+.brand{align-items:center;display:flex;gap:10px;font-size:16px;font-weight:700}
+.brand-mark{background:var(--green);border-radius:6px;color:#06210f;display:inline-flex;font-weight:900;height:26px;justify-content:center;align-items:center;width:26px}
+.live{align-items:center;color:var(--muted);display:flex;font-size:12px;gap:7px}
+.live-dot{background:var(--green);border-radius:50%;box-shadow:0 0 8px rgba(61,220,132,.6);height:7px;width:7px}
+
+.banner{align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;gap:14px;padding:16px;box-shadow:0 10px 30px var(--shadow)}
+.banner-icon{align-items:center;background:var(--surface-2);border-radius:50%;display:flex;flex:none;font-size:20px;height:44px;justify-content:center;width:44px}
+.banner-icon.ok{color:var(--green)}
+.banner-icon.warn{color:var(--orange)}
+.banner-icon.bad{color:var(--red)}
+.banner-text{flex:1;min-width:0}
+.banner-label{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.banner-value{font-size:17px;font-weight:700;margin-top:2px}
+.banner-value.ok{color:var(--green)}
+.banner-value.warn{color:var(--orange)}
+.banner-value.bad{color:var(--red)}
+.refresh-btn{align-items:center;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer;display:flex;flex:none;gap:8px;font-size:13px;font-weight:600;height:40px;padding:0 14px}
+.refresh-btn:hover{border-color:#3a4046}
+.refresh-btn:disabled{cursor:wait;opacity:.6}
+.spin{animation:spin .75s linear infinite;display:inline-block}
+
+.cards{display:grid;gap:14px;grid-template-columns:1fr;margin-top:16px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.card-head{align-items:center;display:flex;gap:12px;justify-content:space-between;padding:16px 16px 14px}
+.card-title{align-items:center;display:flex;gap:12px;min-width:0}
+.card-icon{align-items:center;background:var(--surface-2);border-radius:10px;display:flex;flex:none;font-size:16px;font-weight:700;height:36px;justify-content:center;width:36px}
+.card-eyebrow{color:var(--muted);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.card-title h2{font-size:16px;margin:2px 0 0}
+.badge{align-items:center;background:var(--surface-2);border-radius:999px;display:flex;flex:none;font-size:11px;font-weight:700;gap:6px;padding:6px 10px;text-transform:uppercase;white-space:nowrap}
+.badge i{background:var(--green);border-radius:50%;height:6px;width:6px}
+.card.warning .badge{color:var(--orange)}
+.card.warning .badge i{background:var(--orange)}
+.card.danger .badge,.card.unknown .badge{color:var(--red)}
+.card.danger .badge i,.card.unknown .badge i{background:var(--red)}
+.card.healthy .badge{color:var(--green)}
+
+.components{border-top:1px solid var(--border);margin:0;padding:0}
+.component{align-items:center;border-bottom:1px solid var(--border);display:flex;font-size:13px;gap:10px;justify-content:space-between;padding:10px 16px}
+.component:last-child{border-bottom:0}
+.component-name{color:#cfd3d7;flex:1;min-width:0}
+.component-state{align-items:center;color:var(--green);display:flex;flex:none;font-size:11px;gap:6px;white-space:nowrap}
+.component-state i{background:currentColor;border-radius:50%;height:6px;width:6px}
+.component-state:not(.operational){color:var(--orange)}
+
+.card-foot{align-items:center;background:var(--surface-2);display:flex;font-size:11px;gap:8px;justify-content:space-between;padding:11px 16px}
+.card-foot span{color:var(--muted)}
+.card-foot a{color:#8fcf9f;text-decoration:none}
+.card-foot a:hover{text-decoration:underline}
+
+.site-footer{color:var(--muted);font-size:11px;margin-top:22px;padding:0 2px;text-align:center}
+
 @keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:900px){body{padding:0}.app{border:0;min-height:100vh}.workspace{grid-template-columns:1fr}.sidebar{display:none}.dashboard-grid{grid-template-columns:1fr}.overview{grid-template-columns:repeat(2,1fr)}.metric:nth-child(2){border-right:0}.metric:nth-child(-n+2){border-bottom:1px solid #2d322d}.editor{padding-left:58px}.editor::before{left:8px}.status-right span:nth-child(-n+2){display:none}}
-@media(max-width:520px){.menus span:nth-child(n+4),.tools .tool:nth-child(n+5),.tool-separator{display:none}.overview{grid-template-columns:1fr}.metric{border-bottom:1px solid #2d322d!important;border-right:0}.metric:last-child{border-bottom:0!important}.editor{padding:15px 10px 28px 48px}.editor::before{left:4px;top:15px}.dashboard-grid{grid-template-columns:minmax(0,1fr)}.provider-head{align-items:flex-start;gap:10px}.provider-name{min-width:0}.status-badge{font-size:0}.status-badge i{height:8px;width:8px}.status-right{gap:8px}}
+
+@media(min-width:640px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:400px){
+  .wrap{padding:14px 12px 32px}
+  .banner{flex-wrap:wrap}
+  .refresh-btn{flex:1 1 100%;justify-content:center}
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="titlebar"><div class="app-title"><span class="np-mark">N</span><span>status_zero.json — Status Zero</span></div><div class="window-controls" aria-hidden="true"><i></i><i></i><i></i></div></header>
-  <div class="menubar"><div class="menus"><span>File</span><span>Edit</span><span>Search</span><span>View</span><span>Monitor</span><span>Tools</span><span>Help</span></div><div class="connection"><span class="connection-dot"></span>OFFICIAL FEEDS</div></div>
-  <div class="toolbar"><div class="tools" aria-hidden="true"><span class="tool green">+</span><span class="tool">□</span><span class="tool">↧</span><span class="tool-separator"></span><span class="tool">⌕</span><span class="tool">≡</span><span class="tool green">▶</span></div><button class="refresh-btn" id="refresh"><span id="refreshIcon">↻</span><span id="refreshText">RUN CHECK</span></button></div>
-  <div class="workspace">
-    <aside class="sidebar">
-      <div class="side-title">WORKSPACE</div>
-      <div class="tree"><div class="tree-row"><span class="folder">▾</span><strong>STATUS_ZERO</strong></div><div class="tree-row indent active"><span class="file-json">{ }</span>status_zero.json</div><div class="tree-row indent"><span class="file-json">{ }</span>openai.status</div><div class="tree-row indent"><span class="file-json">{ }</span>anthropic.status</div></div>
-      <div class="side-section"><div class="side-label">STATUS LEGEND</div><div class="legend"><i class="ok"></i>Operational</div><div class="legend"><i class="warn"></i>Degraded</div><div class="legend"><i class="down"></i>Unavailable</div></div>
-      <div class="side-section"><div class="side-label">DATA SOURCES</div><div class="tree-row indent">↗ OpenAI official</div><div class="tree-row indent">↗ Anthropic official</div></div>
-    </aside>
-    <section class="editor-shell">
-      <div class="tabs"><div class="tab active"><span class="tab-dot"></span>status_zero.json <span class="tab-x">×</span></div><div class="tab">monitor.log <span class="tab-x">×</span></div></div>
-      <section class="overview" aria-label="Status overview"><div class="metric"><div class="metric-label">Overall state</div><div class="metric-value green" id="overall">CHECKING</div><div class="metric-sub">Combined provider health</div></div><div class="metric"><div class="metric-label">Operational</div><div class="metric-value" id="operationalCount">—</div><div class="metric-sub">Monitored services</div></div><div class="metric"><div class="metric-label">Issues</div><div class="metric-value" id="issueCount">—</div><div class="metric-sub">Active degradations</div></div><div class="metric"><div class="metric-label">Last execution</div><div class="metric-value small" id="lastCheck">PENDING</div><div class="metric-sub" id="nextCheck">Next check in 60s</div></div></section>
-      <div class="editor">
-        <div class="code-comment">// Real-time AI service telemetry from official status endpoints</div>
-        <div><span class="syntax-key">const</span> serviceMonitor <span class="syntax-brace">= {</span></div>
-        <div>&nbsp;&nbsp;<span class="syntax-key">environment</span>: <span class="syntax-string">"production"</span>,</div>
-        <div>&nbsp;&nbsp;<span class="syntax-key">autoRefresh</span>: <span class="syntax-bool">true</span>,</div>
-        <div>&nbsp;&nbsp;<span class="syntax-key">intervalSeconds</span>: <span class="syntax-number">60</span>,</div>
-        <div>&nbsp;&nbsp;<span class="syntax-key">providers</span>: <span class="syntax-brace">[</span></div>
-        <div class="dashboard-grid" id="cards"></div>
-        <div>&nbsp;&nbsp;<span class="syntax-brace">]</span>,</div>
-        <div>&nbsp;&nbsp;<span class="syntax-key">history</span>: <span class="syntax-string">"recent checks"</span></div>
-        <div><span class="syntax-brace">};</span></div>
-        <section class="history"><div class="history-head"><span class="history-title">CHECK HISTORY</span><span class="history-note">Current session · newest on right</span></div><div class="history-bars" id="historyBars"></div></section>
-      </div>
-    </section>
-  </div>
-  <footer class="statusbar"><div class="status-left"><span class="status-ready" id="readyState">READY</span><span>UTF-8</span><span>JSON</span></div><div class="status-right"><span>Ln 1, Col 1</span><span>Windows (CR LF)</span><span id="clock">00:00:00</span></div></footer>
+<div class="wrap">
+  <header class="site-header">
+    <div class="brand"><span class="brand-mark">Z</span>Status Zero</div>
+    <div class="live"><span class="live-dot"></span>Official feeds</div>
+  </header>
+
+  <section class="banner" aria-label="Overall status">
+    <span class="banner-icon" id="overallIcon">◐</span>
+    <div class="banner-text">
+      <div class="banner-label">Overall status</div>
+      <div class="banner-value" id="overall">Checking…</div>
+    </div>
+    <button class="refresh-btn" id="refresh"><span id="refreshIcon">↻</span><span id="refreshText">Refresh</span></button>
+  </section>
+
+  <section class="cards" id="cards" aria-label="AI service status"></section>
+
+  <footer class="site-footer">
+    Auto-refreshes every 60s · next check in <span id="nextCheck">60s</span> · last checked <span id="lastCheck">—</span>
+  </footer>
 </div>
 <script>
 const SOURCES=[
  {id:'openai',name:'ChatGPT',vendor:'OpenAI',url:'https://status.openai.com/api/v2/summary.json',page:'https://status.openai.com/',components:['Conversations','Login','Search','GPTs']},
  {id:'claude',name:'Claude',vendor:'Anthropic',url:'https://status.claude.com/api/v2/summary.json',page:'https://status.claude.com/',components:['claude.ai','Claude API (api.anthropic.com)','Claude Code']}
 ];
-let seconds=60;const history=[];
+let seconds=60;
 const stateClass=indicator=>indicator==='none'?'healthy':['minor','maintenance'].includes(indicator)?'warning':['major','critical'].includes(indicator)?'danger':'unknown';
-const stateLabel=indicator=>indicator==='none'?'OPERATIONAL':['minor','maintenance'].includes(indicator)?'DEGRADED':['major','critical'].includes(indicator)?'OUTAGE':'UNAVAILABLE';
-const pretty=status=>status==='operational'?'OPERATIONAL':status.replaceAll('_',' ').toUpperCase();
-const formatTime=date=>new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(date);
+const stateLabel=indicator=>indicator==='none'?'Operational':['minor','maintenance'].includes(indicator)?'Degraded':['major','critical'].includes(indicator)?'Outage':'Unavailable';
+const pretty=status=>status==='operational'?'Operational':status.replaceAll('_',' ').replace(/\b\w/g,l=>l.toUpperCase());
+const formatTime=date=>new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'}).format(date);
 function renderCards(providers){
- document.getElementById('cards').innerHTML=providers.map(provider=>{const type=stateClass(provider.indicator);const components=provider.components.length?provider.components.map(component=>`<div class="component"><span class="component-name">${component.name}</span><span class="component-state ${component.status}"><i></i>${pretty(component.status)}</span></div>`).join(''):'<div class="component"><span class="component-name">Official endpoint</span><span class="component-state"><i></i>NO RESPONSE</span></div>';return `<article class="provider-card ${type}"><header class="provider-head"><div class="provider-name"><span class="provider-icon">${provider.id==='openai'?'O':'A'}</span><div><div class="provider-eyebrow">${provider.vendor}</div><h2>${provider.name}</h2></div></div><span class="status-badge"><i></i>${stateLabel(provider.indicator)}</span></header><div class="code-block"><span class="syntax-brace">{</span><br>&nbsp;&nbsp;<span class="syntax-key">"provider"</span>: <span class="syntax-string">"${provider.vendor}"</span>,<br>&nbsp;&nbsp;<span class="syntax-key">"indicator"</span>: <span class="syntax-string">"${provider.indicator}"</span><br><span class="syntax-brace">}</span></div><div class="component-list">${components}</div><footer class="provider-foot"><span>updated ${provider.updatedAt?formatTime(new Date(provider.updatedAt)):'unknown'}</span><a href="${provider.page}" target="_blank" rel="noreferrer">official status ↗</a></footer></article>`}).join('');
+ document.getElementById('cards').innerHTML=providers.map(provider=>{
+  const type=stateClass(provider.indicator);
+  const components=provider.components.length?provider.components.map(component=>`<div class="component"><span class="component-name">${component.name}</span><span class="component-state ${component.status}"><i></i>${pretty(component.status)}</span></div>`).join(''):'<div class="component"><span class="component-name">Official endpoint</span><span class="component-state"><i></i>No response</span></div>';
+  return `<article class="card ${type}"><header class="card-head"><div class="card-title"><span class="card-icon">${provider.id==='openai'?'O':'A'}</span><div><div class="card-eyebrow">${provider.vendor}</div><h2>${provider.name}</h2></div></div><span class="badge"><i></i>${stateLabel(provider.indicator)}</span></header><div class="components">${components}</div><footer class="card-foot"><span>Updated ${provider.updatedAt?formatTime(new Date(provider.updatedAt)):'unknown'}</span><a href="${provider.page}" target="_blank" rel="noreferrer">Status page ↗</a></footer></article>`;
+ }).join('');
 }
-function renderHistory(){document.getElementById('historyBars').innerHTML=history.map(item=>`<span class="history-bar ${item}" style="height:${item==='healthy'?28:item==='warning'?20:12}px" title="${item}"></span>`).join('')||'<span class="history-note">No checks recorded yet</span>'}
 async function check(){
- const button=document.getElementById('refresh'),icon=document.getElementById('refreshIcon'),label=document.getElementById('refreshText');button.disabled=true;icon.className='spin';label.textContent='RUNNING';document.getElementById('readyState').textContent='EXECUTING';
+ const button=document.getElementById('refresh'),icon=document.getElementById('refreshIcon'),label=document.getElementById('refreshText');
+ button.disabled=true;icon.className='spin';label.textContent='Checking…';
  const providers=await Promise.all(SOURCES.map(async source=>{try{const response=await fetch(source.url,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();return{...source,indicator:data.status?.indicator||'unknown',updatedAt:data.page?.updated_at||null,components:source.components.map(name=>(data.components||[]).find(component=>component.name===name)).filter(Boolean)}}catch{return{...source,indicator:'unknown',updatedAt:null,components:[]}}}));
- const components=providers.flatMap(provider=>provider.components),issues=components.filter(component=>component.status!=='operational').length,operational=components.filter(component=>component.status==='operational').length,classes=providers.map(provider=>stateClass(provider.indicator));
- const overall=classes.includes('danger')||classes.includes('unknown')?'ATTENTION':classes.includes('warning')?'DEGRADED':'NOMINAL';document.getElementById('overall').textContent=overall;document.getElementById('overall').className='metric-value '+(overall==='NOMINAL'?'green':'');document.getElementById('operationalCount').textContent=operational;document.getElementById('issueCount').textContent=issues;document.getElementById('lastCheck').textContent=formatTime(new Date());seconds=60;
- const historyState=classes.includes('danger')||classes.includes('unknown')?'down':classes.includes('warning')?'warn':'healthy';history.push(historyState);if(history.length>24)history.shift();renderCards(providers);renderHistory();button.disabled=false;icon.className='';label.textContent='RUN CHECK';document.getElementById('readyState').textContent='READY';
+ const classes=providers.map(provider=>stateClass(provider.indicator));
+ const overallEl=document.getElementById('overall'),iconEl=document.getElementById('overallIcon');
+ if(classes.includes('danger')||classes.includes('unknown')){overallEl.textContent='Attention needed';overallEl.className='banner-value bad';iconEl.textContent='⚠';iconEl.className='banner-icon bad';}
+ else if(classes.includes('warning')){overallEl.textContent='Degraded performance';overallEl.className='banner-value warn';iconEl.textContent='◐';iconEl.className='banner-icon warn';}
+ else{overallEl.textContent='All systems operational';overallEl.className='banner-value ok';iconEl.textContent='●';iconEl.className='banner-icon ok';}
+ document.getElementById('lastCheck').textContent=formatTime(new Date());
+ seconds=60;
+ renderCards(providers);
+ button.disabled=false;icon.className='';label.textContent='Refresh';
 }
-function tick(){seconds=seconds<=1?60:seconds-1;document.getElementById('nextCheck').textContent=`Next check in ${seconds}s`;document.getElementById('clock').textContent=formatTime(new Date())}
-document.getElementById('refresh').addEventListener('click',check);setInterval(tick,1000);setInterval(check,60000);tick();check();
+function tick(){seconds=seconds<=1?60:seconds-1;document.getElementById('nextCheck').textContent=`${seconds}s`}
+document.getElementById('refresh').addEventListener('click',check);
+setInterval(tick,1000);setInterval(check,60000);tick();check();
 </script>
 </body>
 </html>
