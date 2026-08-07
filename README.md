@@ -1,111 +1,84 @@
 # Status Zero
 
-Status Zero is a live public dashboard for monitoring the official service status of ChatGPT, Claude, Microsoft Copilot, GitHub Copilot, Cursor, Groq, ElevenLabs, and Cohere.
+Live status for eight AI services on one page. No accounts, no backend: the
+browser reads each vendor's official status feed directly and re-checks every
+60 seconds.
 
-## Open the dashboard
+**[thisisskay.github.io/status-zero](https://thisisskay.github.io/status-zero/)**
 
-**[Launch Status Zero](https://thisisskay.github.io/status-zero/)**
+![The Status Zero dashboard, showing a card per service with its components and their current state](public/preview.png)
 
-## Live dashboard
+## Tracked services
 
-The public GitHub Pages site is served from `index.html`. It reads each provider's official status feed directly in the browser and refreshes automatically every 60 seconds.
+| Service | Vendor | Status feed |
+| --- | --- | --- |
+| ChatGPT | OpenAI | [status.openai.com](https://status.openai.com/) |
+| Claude | Anthropic | [status.claude.com](https://status.claude.com/) |
+| Copilot | Microsoft | [copilot.statuspage.io](https://copilot.statuspage.io/) |
+| GitHub Copilot | GitHub | [githubstatus.com](https://www.githubstatus.com/) |
+| Cursor | Anysphere | [status.cursor.com](https://status.cursor.com/) |
+| Groq | Groq | [groqstatus.com](https://groqstatus.com/) |
+| ElevenLabs | ElevenLabs | [status.elevenlabs.io](https://status.elevenlabs.io/) |
+| Cohere | Cohere | [status.cohere.com](https://status.cohere.com/) |
 
-Eight services are tracked: ChatGPT, Claude, Microsoft Copilot, GitHub Copilot,
-Cursor, Groq, ElevenLabs, and Cohere. Every one is confirmed readable from the
-browser; providers that cannot be read are not listed at all, rather than
-carried as entries that permanently report nothing.
+Every one serves an Atlassian Statuspage `/api/v2/summary.json` feed with
+permissive CORS headers — a hard requirement, since the fetch happens in the
+visitor's own browser with nothing in between.
 
-A provider that fails to answer on a given poll is therefore a genuine blip, not
-a standing gap. It drops to a compact link beneath the cards for that cycle and
-is excluded from the overall verdict — a feed we could not fetch says nothing
-about that provider's health and must never be reported as an outage. The banner
-counts them, and reports "Unable to check" only when no feed at all could be
-read.
+## How it behaves
 
-The page renders entirely in lowercase, including component and incident names
-that arrive from the feeds.
+- **An unreachable feed is not an outage.** It is excluded from the overall
+  verdict and drops to a link below the cards; the banner reports "unable to
+  check" only when no feed at all could be read.
+- **Problems sort first.** Each card lists up to four components with anything
+  not operational at the top, so an outage buried far down a long list still
+  surfaces.
+- **Only live events are headlined.** Unresolved incidents, and maintenance
+  that is actually running — work merely scheduled for later is left out, or a
+  single model in a single region would sit above every service on the page.
+- **The tab carries the verdict.** Favicon and title turn green, amber or red,
+  so a pinned tab is readable without opening it.
+- Everything renders in lowercase, including names supplied by the feeds.
 
-Each card lists up to four components, and **anything not operational sorts
-first**, so an outage buried far down a long component list still surfaces. The
-per-provider `components` list is only a preference for the remaining slots — a
-component the provider renames costs its position rather than vanishing
-silently and leaving a short card.
+## Repository layout
 
-It also surfaces incidents and maintenance reported by the feeds, with a link to
-the relevant incident page. Only events that are actually happening qualify:
-unresolved incidents, and maintenance whose status is `in_progress` or
-`verifying`. Work merely *scheduled* for later is deliberately excluded — some
-providers publish maintenance per model and per region, which would otherwise
-keep future, single-model events permanently parked above every service on the
-page. That section renders nothing when nothing is going on. The browser tab's favicon and title track
-the overall status too, so a pinned tab shows green, amber, or red at a glance.
+| Path | What it is |
+| --- | --- |
+| `index.html` | The deployed site. Self-contained — no build step, no dependencies. |
+| `Status Zero.html` | Byte-identical copy of `index.html`, kept for opening straight off disk. |
+| `Status Zero Whimsical.html` | The same dashboard in a more playful style. |
+| `app/` | A vinext/React port. Not deployed, and currently tracks only ChatGPT and Claude. |
 
-## Standalone dashboards
+## Running locally
 
-- `Status Zero.html` — professional deep-black operations dashboard
-- `Status Zero Whimsical.html` — playful storybook dashboard
+`index.html` needs nothing — open it in a browser. Internet access is required
+for live data.
 
-Both files can be opened directly in a browser without installing anything. Internet access is required for live status updates.
-
-## Full app
-
-The repository also includes a vinext/React implementation under `app/`.
-
-### Requirements
-
-- Node.js 22.13 or newer
-- pnpm
-
-### Local development
+The `app/` port needs Node 22.13+ and pnpm:
 
 ```bash
 pnpm install
-pnpm run dev
+pnpm run dev                  # http://localhost:3000
+pnpm run build && pnpm test
 ```
 
-Open `http://localhost:3000`.
+## Services that aren't here, and why
 
-### Validation
+Each was added, watched fail in a browser, and removed. They are recorded so the
+same endpoints don't get tried a third time.
 
-```bash
-pnpm run build
-pnpm test
-```
+| Service | Reason |
+| --- | --- |
+| Grok (`status.x.ai`) | Runs on Instatus; JSON endpoints are blocked outright, leaving only an RSS feed under the same restriction. |
+| Le Chat (`status.mistral.ai`) | Runs on Instatus; the endpoint returns no `Access-Control-Allow-Origin` header. |
+| Gemini | No Statuspage feed exists. Google publishes to `status.cloud.google.com` in an unrelated format. |
+| Perplexity, Hugging Face, Replicate | `/api/v2/summary.json` never answered from the browser. |
 
-## Data sources
+Restoring any of them would take a server-side proxy — a Worker or serverless
+function that refetches the feed and re-serves it with CORS headers. Nothing
+client-side can work around it.
 
-- OpenAI (ChatGPT): `https://status.openai.com/api/v2/summary.json`
-- Anthropic (Claude): `https://status.claude.com/api/v2/summary.json`
-- Microsoft (Copilot): `https://copilot.statuspage.io/api/v2/summary.json`
-- GitHub (Copilot): `https://www.githubstatus.com/api/v2/summary.json`
-- Anysphere (Cursor): `https://status.cursor.com/api/v2/summary.json`
-- Groq: `https://groqstatus.com/api/v2/summary.json`
-- ElevenLabs: `https://status.elevenlabs.io/api/v2/summary.json`
-- Cohere: `https://status.cohere.com/api/v2/summary.json`
+---
 
-All run on Atlassian Statuspage, which serves its `summary.json` with
-permissive CORS headers — a hard requirement here, since this is a static site
-that fetches directly from the visitor's browser with no backend to proxy
-through.
-
-### Providers that were tried and removed
-
-Each of these was added, observed failing in the browser, and removed. They are
-listed here so the same URLs are not guessed at again:
-
-- **Grok** (`status.x.ai`) and **Le Chat** (`status.mistral.ai`) run on Instatus,
-  which does not serve status JSON cross-origin. Mistral's endpoint returns no
-  `Access-Control-Allow-Origin` header, and xAI blocks its JSON endpoints
-  outright, publishing only an RSS feed at `status.x.ai/feed.xml` that is subject
-  to the same restriction.
-- **Gemini** has no Statuspage feed at all. Google publishes status at
-  `status.cloud.google.com` in an unrelated format.
-- **Perplexity**, **Hugging Face** and **Replicate** never answered on their
-  `/api/v2/summary.json` endpoints from the browser.
-
-Adding any of them back would require a server-side proxy (a Worker or
-serverless function) to fetch the feed and re-serve it with CORS headers.
-Nothing client-side can work around it.
-
-Status Zero is an independent monitor and is not affiliated with OpenAI,
-Anthropic, Microsoft, GitHub, Anysphere, Groq, ElevenLabs, or Cohere.
+Status Zero is an independent monitor and is not affiliated with any vendor
+listed here.
