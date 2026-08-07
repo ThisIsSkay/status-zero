@@ -1,6 +1,6 @@
 # Status Zero
 
-Status Zero is a live public dashboard for monitoring the official service status of ChatGPT, Claude, Microsoft Copilot, and GitHub Copilot.
+Status Zero is a live public dashboard for monitoring the official service status of ChatGPT, Claude, Microsoft Copilot, GitHub Copilot, Cursor, Groq, ElevenLabs, and Cohere.
 
 ## Open the dashboard
 
@@ -10,25 +10,20 @@ Status Zero is a live public dashboard for monitoring the official service statu
 
 The public GitHub Pages site is served from `index.html`. It reads each provider's official status feed directly in the browser and refreshes automatically every 60 seconds.
 
-Fourteen services are tracked: ChatGPT, Claude, Microsoft Copilot, GitHub
-Copilot, Grok, Gemini, Perplexity, Cursor, Mistral, Hugging Face, Groq,
-Replicate, ElevenLabs, and Cohere. Reading a live status requires an Atlassian
-Statuspage `/api/v2/summary.json` feed, since the page fetches it straight from
-the browser with no backend.
+Eight services are tracked: ChatGPT, Claude, Microsoft Copilot, GitHub Copilot,
+Cursor, Groq, ElevenLabs, and Cohere. Every one is confirmed readable from the
+browser; providers that cannot be read are not listed at all, rather than
+carried as entries that permanently report nothing.
 
-Providers with nothing readable collapse into a compact "Direct links" row
-beneath the cards instead of occupying a full-size card that reports nothing.
-Two different things land there:
+A provider that fails to answer on a given poll is therefore a genuine blip, not
+a standing gap. It drops to a compact link beneath the cards for that cycle and
+is excluded from the overall verdict — a feed we could not fetch says nothing
+about that provider's health and must never be reported as an outage. The banner
+counts them, and reports "Unable to check" only when no feed at all could be
+read.
 
-- **Unreachable feeds**, which may be a temporary blip — these are excluded from
-  the overall verdict, because a feed we could not fetch says nothing about that
-  provider's health and must not be reported as an outage.
-- **Link-only providers**, such as Gemini. Google publishes no Statuspage feed
-  (its status lives at `status.cloud.google.com` in an unrelated format), so the
-  entry is a deliberate link rather than a failed fetch, and is labelled as such.
-
-The banner counts each group separately and reports "Unable to check" only when
-no feed at all could be read.
+The page renders entirely in lowercase, including component and incident names
+that arrive from the feeds.
 
 Each card lists up to four components, and **anything not operational sorts
 first**, so an outage buried far down a long component list still surfaces. The
@@ -83,23 +78,34 @@ pnpm test
 - Anthropic (Claude): `https://status.claude.com/api/v2/summary.json`
 - Microsoft (Copilot): `https://copilot.statuspage.io/api/v2/summary.json`
 - GitHub (Copilot): `https://www.githubstatus.com/api/v2/summary.json`
+- Anysphere (Cursor): `https://status.cursor.com/api/v2/summary.json`
+- Groq: `https://groqstatus.com/api/v2/summary.json`
+- ElevenLabs: `https://status.elevenlabs.io/api/v2/summary.json`
+- Cohere: `https://status.cohere.com/api/v2/summary.json`
 
-All four run on Atlassian Statuspage, which serves its `summary.json` with
+All run on Atlassian Statuspage, which serves its `summary.json` with
 permissive CORS headers — a hard requirement here, since this is a static site
 that fetches directly from the visitor's browser with no backend to proxy
 through.
 
-### Why Grok and Le Chat aren't listed
+### Providers that were tried and removed
 
-Both were tried and removed. xAI (`status.x.ai`) and Mistral AI
-(`status.mistral.ai`) both run on Instatus, which does not serve status JSON
-cross-origin: Mistral's endpoint returns no `Access-Control-Allow-Origin`
-header, and xAI blocks its JSON endpoints outright, publishing only an RSS
-feed at `status.x.ai/feed.xml` that is subject to the same restriction.
+Each of these was added, observed failing in the browser, and removed. They are
+listed here so the same URLs are not guessed at again:
 
-Adding either one back would require a server-side proxy (a Worker or
+- **Grok** (`status.x.ai`) and **Le Chat** (`status.mistral.ai`) run on Instatus,
+  which does not serve status JSON cross-origin. Mistral's endpoint returns no
+  `Access-Control-Allow-Origin` header, and xAI blocks its JSON endpoints
+  outright, publishing only an RSS feed at `status.x.ai/feed.xml` that is subject
+  to the same restriction.
+- **Gemini** has no Statuspage feed at all. Google publishes status at
+  `status.cloud.google.com` in an unrelated format.
+- **Perplexity**, **Hugging Face** and **Replicate** never answered on their
+  `/api/v2/summary.json` endpoints from the browser.
+
+Adding any of them back would require a server-side proxy (a Worker or
 serverless function) to fetch the feed and re-serve it with CORS headers.
 Nothing client-side can work around it.
 
 Status Zero is an independent monitor and is not affiliated with OpenAI,
-Anthropic, Microsoft, or GitHub.
+Anthropic, Microsoft, GitHub, Anysphere, Groq, ElevenLabs, or Cohere.
