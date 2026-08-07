@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Live status for ChatGPT, Claude, Grok, Copilot, and Le Chat.">
+<meta name="description" content="Live status for ChatGPT, Claude, Grok, and Copilot.">
 <meta property="og:title" content="Status Zero — AI Service Monitor">
-<meta property="og:description" content="Live status for ChatGPT, Claude, Grok, Copilot, and Le Chat.">
+<meta property="og:description" content="Live status for ChatGPT, Claude, Grok, and Copilot.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://thisisskay.github.io/status-zero/">
 <meta property="og:image" content="https://thisisskay.github.io/status-zero/public/status-zero-og.png">
@@ -15,7 +15,7 @@
 <meta property="og:image:alt" content="Status Zero ASCII terminal service monitor">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Status Zero — AI Service Monitor">
-<meta name="twitter:description" content="Live status for ChatGPT, Claude, Grok, Copilot, and Le Chat.">
+<meta name="twitter:description" content="Live status for ChatGPT, Claude, Grok, and Copilot.">
 <meta name="twitter:image" content="https://thisisskay.github.io/status-zero/public/status-zero-og.png">
 <title>Status Zero — AI Service Monitor</title>
 <style>
@@ -117,10 +117,12 @@ button,a{font:inherit}
 const SOURCES=[
  {id:'openai',kind:'statuspage',icon:'O',name:'ChatGPT',vendor:'OpenAI',url:'https://status.openai.com/api/v2/summary.json',page:'https://status.openai.com/',components:['Conversations','Login','Search','GPTs']},
  {id:'claude',kind:'statuspage',icon:'A',name:'Claude',vendor:'Anthropic',url:'https://status.claude.com/api/v2/summary.json',page:'https://status.claude.com/',components:['claude.ai','Claude API (api.anthropic.com)','Claude Code']},
- {id:'grok',kind:'instatus',icon:'X',name:'Grok',vendor:'xAI',url:'https://status.x.ai/grok-com/summary.json',page:'https://status.x.ai/grok-com'},
+ {id:'grok',kind:'instatus',icon:'X',name:'Grok',vendor:'xAI',url:'https://status.x.ai/summary.json',page:'https://status.x.ai/'},
  {id:'mscopilot',kind:'statuspage',icon:'Co',name:'Copilot',vendor:'Microsoft',url:'https://copilot.statuspage.io/api/v2/summary.json',page:'https://copilot.statuspage.io/',components:null},
- {id:'ghcopilot',kind:'statuspage',icon:'Gh',name:'GitHub Copilot',vendor:'GitHub',url:'https://www.githubstatus.com/api/v2/summary.json',page:'https://www.githubstatus.com/',components:['Copilot']},
- {id:'mistral',kind:'instatus',icon:'Mi',name:'Le Chat',vendor:'Mistral AI',url:'https://status.mistral.ai/summary.json',page:'https://status.mistral.ai/'}
+ {id:'ghcopilot',kind:'statuspage',icon:'Gh',name:'GitHub Copilot',vendor:'GitHub',url:'https://www.githubstatus.com/api/v2/summary.json',page:'https://www.githubstatus.com/',components:['Copilot']}
+ // Mistral AI (Le Chat) omitted: status.mistral.ai's summary.json has no
+ // Access-Control-Allow-Origin header, so a browser can never read it
+ // cross-origin from here — confirmed via a live console CORS error.
 ];
 let seconds=60;
 const stateClass=indicator=>indicator==='none'?'healthy':['minor','maintenance'].includes(indicator)?'warning':['major','critical'].includes(indicator)?'danger':'unknown';

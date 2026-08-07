@@ -1,6 +1,6 @@
 # Status Zero
 
-Status Zero is a live public dashboard for monitoring the official service status of ChatGPT, Claude, Grok, Microsoft Copilot, GitHub Copilot, and Mistral Le Chat.
+Status Zero is a live public dashboard for monitoring the official service status of ChatGPT, Claude, Grok, Microsoft Copilot, and GitHub Copilot.
 
 ## Open the dashboard
 
@@ -46,9 +46,10 @@ pnpm test
 
 - OpenAI (ChatGPT): `https://status.openai.com/api/v2/summary.json`
 - Anthropic (Claude): `https://status.claude.com/api/v2/summary.json`
-- xAI (Grok): `https://status.x.ai/grok-com/summary.json`
+- xAI (Grok): `https://status.x.ai/summary.json`
 - Microsoft (Copilot): `https://copilot.statuspage.io/api/v2/summary.json`
 - GitHub (Copilot): `https://www.githubstatus.com/api/v2/summary.json`
-- Mistral AI (Le Chat): `https://status.mistral.ai/summary.json`
 
-Status Zero is an independent monitor and is not affiliated with OpenAI, Anthropic, xAI, Microsoft, GitHub, or Mistral AI.
+Mistral AI (Le Chat) isn't included: `status.mistral.ai`'s public endpoint doesn't send an `Access-Control-Allow-Origin` header, so a browser can't read it cross-origin from this static site.
+
+Status Zero is an independent monitor and is not affiliated with OpenAI, Anthropic, xAI, Microsoft, or GitHub.
