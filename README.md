@@ -36,9 +36,13 @@ per-provider `components` list is only a preference for the remaining slots — 
 component the provider renames costs its position rather than vanishing
 silently and leaving a short card.
 
-It also surfaces any active incidents and scheduled maintenance reported by the
-feeds, with a link to the relevant incident page. That section renders nothing
-when every provider is operational. The browser tab's favicon and title track
+It also surfaces incidents and maintenance reported by the feeds, with a link to
+the relevant incident page. Only events that are actually happening qualify:
+unresolved incidents, and maintenance whose status is `in_progress` or
+`verifying`. Work merely *scheduled* for later is deliberately excluded — some
+providers publish maintenance per model and per region, which would otherwise
+keep future, single-model events permanently parked above every service on the
+page. That section renders nothing when nothing is going on. The browser tab's favicon and title track
 the overall status too, so a pinned tab shows green, amber, or red at a glance.
 
 ## Standalone dashboards

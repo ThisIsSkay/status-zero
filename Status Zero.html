@@ -186,6 +186,7 @@ const stateClass=indicator=>indicator==='none'?'healthy':['minor','maintenance']
 const stateLabel=indicator=>indicator==='none'?'Operational':['minor','maintenance'].includes(indicator)?'Degraded':['major','critical'].includes(indicator)?'Outage':'Unavailable';
 const pretty=status=>status==='operational'?'Operational':status.replaceAll('_',' ').replace(/\b\w/g,l=>l.toUpperCase());
 const formatTime=date=>new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'}).format(date);
+const LIVE_MAINTENANCE=['in_progress','verifying'];
 const escapeHtml=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const titleCase=value=>String(value).replaceAll('_',' ').replace(/\b\w/g,l=>l.toUpperCase());
 // Atlassian Statuspage.io shape: {status:{indicator}, page:{updated_at}, components:[{name,status}],
@@ -201,7 +202,9 @@ function parseStatuspage(source,data){
  const resolved=pool.slice().sort((a,b)=>rank(a)-rank(b)||preference(a)-preference(b)).slice(0,4);
  const alerts=[
   ...(data.incidents||[]).map(i=>({kind:i.impact==='critical'?'critical':'incident',vendor:source.name,name:i.name,state:i.status,url:i.shortlink})),
-  ...(data.scheduled_maintenances||[]).map(m=>({kind:'maintenance',vendor:source.name,name:m.name,state:m.status,url:m.shortlink})),
+  // summary.json also returns maintenance scheduled for later. Only work that is
+  // actually running belongs at the top of the page; the rest is not yet news.
+  ...(data.scheduled_maintenances||[]).filter(m=>LIVE_MAINTENANCE.includes(m.status)).map(m=>({kind:'maintenance',vendor:source.name,name:m.name,state:m.status,url:m.shortlink})),
  ];
  return{indicator:data.status?.indicator||'unknown',updatedAt:data.page?.updated_at||null,items:resolved.map(c=>({name:c.name,status:c.status})),alerts};
 }
