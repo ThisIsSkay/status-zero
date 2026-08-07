@@ -6,8 +6,6 @@ browser reads each vendor's official status feed directly and re-checks every
 
 **[thisisskay.github.io/status-zero](https://thisisskay.github.io/status-zero/)**
 
-![The Status Zero dashboard, showing a card per service with its components and their current state](public/preview.png)
-
 ## Tracked services
 
 | Service | Vendor | Status feed |
