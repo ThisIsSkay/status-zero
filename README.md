@@ -10,15 +10,31 @@ Status Zero is a live public dashboard for monitoring the official service statu
 
 The public GitHub Pages site is served from `index.html`. It reads each provider's official status feed directly in the browser and refreshes automatically every 60 seconds.
 
-Twelve services are tracked: ChatGPT, Claude, Microsoft Copilot, GitHub Copilot,
-Perplexity, Cursor, Mistral, Hugging Face, Groq, Replicate, ElevenLabs, and
-Cohere. Each must publish an Atlassian Statuspage `/api/v2/summary.json` feed,
-since the page reads them straight from the browser with no backend.
+Fourteen services are tracked: ChatGPT, Claude, Microsoft Copilot, GitHub
+Copilot, Grok, Gemini, Perplexity, Cursor, Mistral, Hugging Face, Groq,
+Replicate, ElevenLabs, and Cohere. Reading a live status requires an Atlassian
+Statuspage `/api/v2/summary.json` feed, since the page fetches it straight from
+the browser with no backend.
 
-A feed the browser cannot reach says nothing about that provider's health, so it
-is shown as a muted "Unavailable" card and excluded from the overall verdict
-rather than counted as an outage. The banner notes how many feeds were
-unreachable, and reports "Unable to check" only when none could be read.
+Providers with nothing readable collapse into a compact "Direct links" row
+beneath the cards instead of occupying a full-size card that reports nothing.
+Two different things land there:
+
+- **Unreachable feeds**, which may be a temporary blip — these are excluded from
+  the overall verdict, because a feed we could not fetch says nothing about that
+  provider's health and must not be reported as an outage.
+- **Link-only providers**, such as Gemini. Google publishes no Statuspage feed
+  (its status lives at `status.cloud.google.com` in an unrelated format), so the
+  entry is a deliberate link rather than a failed fetch, and is labelled as such.
+
+The banner counts each group separately and reports "Unable to check" only when
+no feed at all could be read.
+
+Each card lists up to four components, and **anything not operational sorts
+first**, so an outage buried far down a long component list still surfaces. The
+per-provider `components` list is only a preference for the remaining slots — a
+component the provider renames costs its position rather than vanishing
+silently and leaving a short card.
 
 It also surfaces any active incidents and scheduled maintenance reported by the
 feeds, with a link to the relevant incident page. That section renders nothing

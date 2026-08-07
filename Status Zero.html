@@ -83,10 +83,17 @@ button,a{font:inherit}
 .card.danger .badge{color:var(--red)}
 .card.danger .badge i{background:var(--red)}
 .card.healthy .badge{color:var(--green)}
-/* An unreachable feed is our problem, not the provider's — keep it muted, never alarming. */
-.card.unknown{opacity:.72}
-.card.unknown .badge{color:var(--muted)}
-.card.unknown .badge i{background:var(--muted)}
+/* Providers with nothing readable collapse to a compact link, grouped together
+   at the end rather than left as empty holes in the card grid. */
+.tiles-label{color:var(--muted);font-size:11px;letter-spacing:.08em;margin:22px 2px 0;text-transform:uppercase}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));margin-top:10px}
+.tile{align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:inherit;display:flex;gap:10px;padding:11px 12px;text-decoration:none}
+.tile:hover{background:var(--surface-2);border-color:#3a3f45}
+.tile .card-icon{flex:none;font-size:13px;height:30px;width:30px}
+.tile-body{display:block;min-width:0}
+.tile-name{display:block;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile-reason{color:var(--muted);display:block;font-size:10px;letter-spacing:.05em;margin-top:2px;text-transform:uppercase}
+.tile-cta{color:#8fcf9f;flex:none;font-size:12px;margin-left:auto}
 
 .components{border-top:1px solid var(--border);margin:0;padding:0}
 .component{align-items:center;border-bottom:1px solid var(--border);display:flex;font-size:13px;gap:10px;justify-content:space-between;padding:10px 16px}
@@ -143,6 +150,9 @@ button,a{font:inherit}
 
   <section class="cards" id="cards" aria-label="AI service status"></section>
 
+  <h2 class="tiles-label" id="tilesLabel" hidden>Direct links</h2>
+  <section class="tiles" id="tiles" aria-label="Services without a readable feed"></section>
+
   <footer class="site-footer">
     Auto-refreshes every 60s · next check in <span id="nextCheck">60s</span> · last checked <span id="lastCheck">—</span>
   </footer>
@@ -158,8 +168,10 @@ const SOURCES=[
  {id:'claude',icon:'A',name:'Claude',vendor:'Anthropic',url:'https://status.claude.com/api/v2/summary.json',page:'https://status.claude.com/',components:['claude.ai','Claude API (api.anthropic.com)','Claude Code']},
  {id:'mscopilot',icon:'Co',name:'Copilot',vendor:'Microsoft',url:'https://copilot.statuspage.io/api/v2/summary.json',page:'https://copilot.statuspage.io/',components:null},
  {id:'ghcopilot',icon:'Gh',name:'GitHub Copilot',vendor:'GitHub',url:'https://www.githubstatus.com/api/v2/summary.json',page:'https://www.githubstatus.com/',components:['Copilot']},
- // components:null lets the page use whatever the feed actually reports, so a
- // renamed component can never leave a card silently empty.
+ {id:'grok',icon:'Gk',name:'Grok',vendor:'xAI',url:'https://status.x.ai/api/v2/summary.json',page:'https://status.x.ai/',components:null},
+ // Google publishes no Statuspage feed — its status lives at status.cloud.google.com
+ // in an unrelated format — so Gemini is a deliberate link, not a failed fetch.
+ {id:'gemini',icon:'Ge',name:'Gemini',vendor:'Google',page:'https://status.cloud.google.com/',linkOnly:true,note:'No public feed'},
  {id:'perplexity',icon:'P',name:'Perplexity',vendor:'Perplexity',url:'https://status.perplexity.com/api/v2/summary.json',page:'https://status.perplexity.com/',components:null},
  {id:'cursor',icon:'Cu',name:'Cursor',vendor:'Anysphere',url:'https://status.cursor.com/api/v2/summary.json',page:'https://status.cursor.com/',components:null},
  {id:'mistral',icon:'M',name:'Mistral',vendor:'Mistral AI',url:'https://status.mistral.ai/api/v2/summary.json',page:'https://status.mistral.ai/',components:null},
@@ -179,7 +191,14 @@ const titleCase=value=>String(value).replaceAll('_',' ').replace(/\b\w/g,l=>l.to
 // Atlassian Statuspage.io shape: {status:{indicator}, page:{updated_at}, components:[{name,status}],
 // incidents:[{name,status,impact,shortlink}], scheduled_maintenances:[{name,status,shortlink}]}
 function parseStatuspage(source,data){
- const resolved=source.components?source.components.map(name=>(data.components||[]).find(c=>c.name===name)).filter(Boolean):(data.components||[]).filter(c=>!c.group).slice(0,4);
+ // Anything not operational sorts first so a card shows the broken thing rather
+ // than the first four healthy ones. `components` is only a preference for the
+ // rest of the slots: a renamed entry costs its position, never the whole row.
+ const preferred=source.components||[];
+ const pool=(data.components||[]).filter(c=>c.name&&!c.group);
+ const rank=c=>c.status==='operational'?1:0;
+ const preference=c=>{const i=preferred.indexOf(c.name);return i<0?preferred.length:i};
+ const resolved=pool.slice().sort((a,b)=>rank(a)-rank(b)||preference(a)-preference(b)).slice(0,4);
  const alerts=[
   ...(data.incidents||[]).map(i=>({kind:i.impact==='critical'?'critical':'incident',vendor:source.name,name:i.name,state:i.status,url:i.shortlink})),
   ...(data.scheduled_maintenances||[]).map(m=>({kind:'maintenance',vendor:source.name,name:m.name,state:m.status,url:m.shortlink})),
@@ -194,6 +213,13 @@ function renderAlerts(providers){
   return `<article class="alert ${alert.kind}"><div class="alert-body"><div class="alert-meta">${escapeHtml(alert.vendor)} · ${label}${alert.state?` · ${escapeHtml(titleCase(alert.state))}`:''}</div><div class="alert-name">${escapeHtml(alert.name)}</div></div>${link}</article>`;
  }).join('');
 }
+function renderTiles(list){
+ document.getElementById('tilesLabel').hidden=!list.length;
+ document.getElementById('tiles').innerHTML=list.map(provider=>{
+  const reason=provider.linkOnly?(provider.note||'No public feed'):'Feed unreachable';
+  return `<a class="tile" href="${escapeHtml(provider.page)}" target="_blank" rel="noreferrer"><span class="card-icon">${escapeHtml(provider.icon)}</span><span class="tile-body"><span class="tile-name">${escapeHtml(provider.name)}</span><span class="tile-reason">${escapeHtml(reason)}</span></span><span class="tile-cta">↗</span></a>`;
+ }).join('');
+}
 function setBrowserStatus(tone,summary){
  const color={ok:'%233ddc84',warn:'%23ffb020',bad:'%23ff5c5c'}[tone];
  document.getElementById('favicon').href=`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='${color}'/%3E%3C/svg%3E`;
@@ -202,32 +228,38 @@ function setBrowserStatus(tone,summary){
 function renderCards(providers){
  document.getElementById('cards').innerHTML=providers.map(provider=>{
   const type=stateClass(provider.indicator);
-  const items=provider.items.length?provider.items.map(item=>`<div class="component"><span class="component-name">${escapeHtml(item.name)}</span><span class="component-state ${escapeHtml(item.status)}"><i></i>${escapeHtml(pretty(item.status))}</span></div>`).join(''):'<div class="component"><span class="component-name">Status feed unreachable</span><span class="component-state unavailable"><i></i>No data</span></div>';
-  return `<article class="card ${type}"><header class="card-head"><div class="card-title"><span class="card-icon">${provider.icon}</span><div class="card-heading"><div class="card-eyebrow">${escapeHtml(provider.vendor)}</div><h2>${escapeHtml(provider.name)}</h2></div></div><span class="badge"><i></i>${stateLabel(provider.indicator)}</span></header><div class="components">${items}</div><footer class="card-foot"><span>Updated ${provider.updatedAt?formatTime(new Date(provider.updatedAt)):'unknown'}</span><a href="${provider.page}" target="_blank" rel="noreferrer">Status page ↗</a></footer></article>`;
+  const items=provider.items.length?provider.items.map(item=>`<div class="component"><span class="component-name">${escapeHtml(item.name)}</span><span class="component-state ${escapeHtml(item.status)}"><i></i>${escapeHtml(pretty(item.status))}</span></div>`).join(''):'<div class="component"><span class="component-name">No components reported</span><span class="component-state unavailable"><i></i>—</span></div>';
+  return `<article class="card ${type}"><header class="card-head"><div class="card-title"><span class="card-icon">${escapeHtml(provider.icon)}</span><div class="card-heading"><div class="card-eyebrow">${escapeHtml(provider.vendor)}</div><h2>${escapeHtml(provider.name)}</h2></div></div><span class="badge"><i></i>${stateLabel(provider.indicator)}</span></header><div class="components">${items}</div><footer class="card-foot"><span>Updated ${provider.updatedAt?formatTime(new Date(provider.updatedAt)):'unknown'}</span><a href="${escapeHtml(provider.page)}" target="_blank" rel="noreferrer">Status page ↗</a></footer></article>`;
  }).join('');
 }
 async function check(){
  const button=document.getElementById('refresh'),icon=document.getElementById('refreshIcon'),label=document.getElementById('refreshText');
  button.disabled=true;icon.className='spin';label.textContent='Checking…';
- const providers=await Promise.all(SOURCES.map(async source=>{try{const response=await fetch(source.url,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();return{...source,...parseStatuspage(source,data)}}catch{return{...source,indicator:'unknown',updatedAt:null,items:[]}}}));
- // A feed we could not reach says nothing about that provider's health, so it is
- // excluded from the verdict instead of raising a false outage alarm.
- const reachable=providers.filter(provider=>provider.indicator!=='unknown');
- const unreachable=providers.length-reachable.length;
- const classes=reachable.map(provider=>stateClass(provider.indicator));
+ const providers=await Promise.all(SOURCES.map(async source=>{
+  if(source.linkOnly)return{...source,indicator:'linkonly',updatedAt:null,items:[],alerts:[]};
+  try{const response=await fetch(source.url,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();return{...source,...parseStatuspage(source,data)}}catch{return{...source,indicator:'unknown',updatedAt:null,items:[],alerts:[]}}
+ }));
+ // Only providers we actually read get a card or a vote in the verdict; a feed we
+ // could not reach says nothing about that provider's health.
+ const readable=providers.filter(provider=>provider.indicator!=='unknown'&&provider.indicator!=='linkonly');
+ const tiles=providers.filter(provider=>provider.indicator==='unknown'||provider.indicator==='linkonly');
+ const unreachable=tiles.filter(provider=>provider.indicator==='unknown').length;
+ const linkOnly=tiles.length-unreachable;
+ const classes=readable.map(provider=>stateClass(provider.indicator));
  const overallEl=document.getElementById('overall'),iconEl=document.getElementById('overallIcon');
  let tone,summary;
- if(!reachable.length){tone='warn';summary='Unable to check';iconEl.textContent='○';}
+ if(!readable.length){tone='warn';summary='Unable to check';iconEl.textContent='○';}
  else if(classes.includes('danger')){tone='bad';summary='Attention needed';iconEl.textContent='⚠';}
  else if(classes.includes('warning')){tone='warn';summary='Degraded performance';iconEl.textContent='◐';}
  else{tone='ok';summary='All systems operational';iconEl.textContent='●';}
- document.getElementById('overallNote').textContent=unreachable?`${unreachable} of ${providers.length} feeds unreachable`:`${providers.length} services checked`;
+ document.getElementById('overallNote').textContent=[`${readable.length} services checked`,unreachable?`${unreachable} unreachable`:'',linkOnly?`${linkOnly} link-only`:''].filter(Boolean).join(' · ');
  overallEl.textContent=summary;overallEl.className='banner-value '+tone;iconEl.className='banner-icon '+tone;
  setBrowserStatus(tone,summary);
  document.getElementById('lastCheck').textContent=formatTime(new Date());
  seconds=60;
- renderAlerts(providers);
- renderCards(providers);
+ renderAlerts(readable);
+ renderCards(readable);
+ renderTiles(tiles);
  button.disabled=false;icon.className='';label.textContent='Refresh';
 }
 function tick(){seconds=seconds<=1?60:seconds-1;document.getElementById('nextCheck').textContent=`${seconds}s`}
