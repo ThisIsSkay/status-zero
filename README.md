@@ -10,6 +10,16 @@ Status Zero is a live public dashboard for monitoring the official service statu
 
 The public GitHub Pages site is served from `index.html`. It reads each provider's official status feed directly in the browser and refreshes automatically every 60 seconds.
 
+Twelve services are tracked: ChatGPT, Claude, Microsoft Copilot, GitHub Copilot,
+Perplexity, Cursor, Mistral, Hugging Face, Groq, Replicate, ElevenLabs, and
+Cohere. Each must publish an Atlassian Statuspage `/api/v2/summary.json` feed,
+since the page reads them straight from the browser with no backend.
+
+A feed the browser cannot reach says nothing about that provider's health, so it
+is shown as a muted "Unavailable" card and excluded from the overall verdict
+rather than counted as an outage. The banner notes how many feeds were
+unreachable, and reports "Unable to check" only when none could be read.
+
 It also surfaces any active incidents and scheduled maintenance reported by the
 feeds, with a link to the relevant incident page. That section renders nothing
 when every provider is operational. The browser tab's favicon and title track
