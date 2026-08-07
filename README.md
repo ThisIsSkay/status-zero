@@ -10,6 +10,11 @@ Status Zero is a live public dashboard for monitoring the official service statu
 
 The public GitHub Pages site is served from `index.html`. It reads each provider's official status feed directly in the browser and refreshes automatically every 60 seconds.
 
+It also surfaces any active incidents and scheduled maintenance reported by the
+feeds, with a link to the relevant incident page. That section renders nothing
+when every provider is operational. The browser tab's favicon and title track
+the overall status too, so a pinned tab shows green, amber, or red at a glance.
+
 ## Standalone dashboards
 
 - `Status Zero.html` — professional deep-black operations dashboard

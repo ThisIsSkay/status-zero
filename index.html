@@ -18,6 +18,7 @@
 <meta name="twitter:description" content="Live status for ChatGPT, Claude, and Copilot.">
 <meta name="twitter:image" content="https://thisisskay.github.io/status-zero/public/status-zero-og.png">
 <title>Status Zero — AI Service Monitor</title>
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='%238b9199'/%3E%3C/svg%3E">
 <style>
 :root{--bg:#0a0b0d;--surface:#141619;--surface-2:#1b1e22;--border:#2a2e33;--text:#eef1f3;--muted:#8b9199;--green:#3ddc84;--green-dim:#28c76f;--orange:#ffb020;--red:#ff5c5c;--shadow:rgba(0,0,0,.4)}
 *{box-sizing:border-box}
@@ -47,6 +48,18 @@ button,a{font:inherit}
 .refresh-btn:hover{border-color:#3a4046}
 .refresh-btn:disabled{cursor:wait;opacity:.6}
 .spin{animation:spin .75s linear infinite;display:inline-block}
+
+/* Active incidents / maintenance. Renders nothing when everything is green. */
+.alerts{display:grid;gap:8px;margin-top:14px}
+.alerts:empty{display:none}
+.alert{align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:10px;display:flex;gap:12px;justify-content:space-between;padding:12px 14px}
+.alert.maintenance{border-left-color:var(--muted)}
+.alert.critical{border-left-color:var(--red)}
+.alert-body{flex:1;min-width:0}
+.alert-meta{color:var(--muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.alert-name{font-size:13px;margin-top:3px}
+.alert-link{color:#8fcf9f;flex:none;font-size:11px;text-decoration:none;white-space:nowrap}
+.alert-link:hover{text-decoration:underline}
 
 .cards{display:grid;gap:14px;grid-template-columns:1fr;margin-top:16px}
 
@@ -107,6 +120,8 @@ button,a{font:inherit}
     <button class="refresh-btn" id="refresh"><span id="refreshIcon">↻</span><span id="refreshText">Refresh</span></button>
   </section>
 
+  <section class="alerts" id="alerts" aria-label="Active incidents" aria-live="polite"></section>
+
   <section class="cards" id="cards" aria-label="AI service status"></section>
 
   <footer class="site-footer">
@@ -130,15 +145,35 @@ const stateClass=indicator=>indicator==='none'?'healthy':['minor','maintenance']
 const stateLabel=indicator=>indicator==='none'?'Operational':['minor','maintenance'].includes(indicator)?'Degraded':['major','critical'].includes(indicator)?'Outage':'Unavailable';
 const pretty=status=>status==='operational'?'Operational':status.replaceAll('_',' ').replace(/\b\w/g,l=>l.toUpperCase());
 const formatTime=date=>new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'}).format(date);
-// Atlassian Statuspage.io shape: {status:{indicator}, page:{updated_at}, components:[{name,status}]}
+const escapeHtml=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const titleCase=value=>String(value).replaceAll('_',' ').replace(/\b\w/g,l=>l.toUpperCase());
+// Atlassian Statuspage.io shape: {status:{indicator}, page:{updated_at}, components:[{name,status}],
+// incidents:[{name,status,impact,shortlink}], scheduled_maintenances:[{name,status,shortlink}]}
 function parseStatuspage(source,data){
  const resolved=source.components?source.components.map(name=>(data.components||[]).find(c=>c.name===name)).filter(Boolean):(data.components||[]).filter(c=>!c.group).slice(0,6);
- return{indicator:data.status?.indicator||'unknown',updatedAt:data.page?.updated_at||null,items:resolved.map(c=>({name:c.name,status:c.status}))};
+ const alerts=[
+  ...(data.incidents||[]).map(i=>({kind:i.impact==='critical'?'critical':'incident',vendor:source.name,name:i.name,state:i.status,url:i.shortlink})),
+  ...(data.scheduled_maintenances||[]).map(m=>({kind:'maintenance',vendor:source.name,name:m.name,state:m.status,url:m.shortlink})),
+ ];
+ return{indicator:data.status?.indicator||'unknown',updatedAt:data.page?.updated_at||null,items:resolved.map(c=>({name:c.name,status:c.status})),alerts};
+}
+function renderAlerts(providers){
+ const alerts=providers.flatMap(provider=>provider.alerts||[]);
+ document.getElementById('alerts').innerHTML=alerts.map(alert=>{
+  const label=alert.kind==='maintenance'?'Maintenance':'Incident';
+  const link=alert.url?`<a class="alert-link" href="${escapeHtml(alert.url)}" target="_blank" rel="noreferrer">Details ↗</a>`:'';
+  return `<article class="alert ${alert.kind}"><div class="alert-body"><div class="alert-meta">${escapeHtml(alert.vendor)} · ${label}${alert.state?` · ${escapeHtml(titleCase(alert.state))}`:''}</div><div class="alert-name">${escapeHtml(alert.name)}</div></div>${link}</article>`;
+ }).join('');
+}
+function setBrowserStatus(tone,summary){
+ const color={ok:'%233ddc84',warn:'%23ffb020',bad:'%23ff5c5c'}[tone];
+ document.getElementById('favicon').href=`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='${color}'/%3E%3C/svg%3E`;
+ document.title=`${{ok:'●',warn:'◐',bad:'⚠'}[tone]} ${summary} — Status Zero`;
 }
 function renderCards(providers){
  document.getElementById('cards').innerHTML=providers.map(provider=>{
   const type=stateClass(provider.indicator);
-  const items=provider.items.length?provider.items.map(item=>`<div class="component"><span class="component-name">${item.name}</span><span class="component-state ${item.status}"><i></i>${pretty(item.status)}</span></div>`).join(''):'<div class="component"><span class="component-name">Official endpoint</span><span class="component-state"><i></i>No response</span></div>';
+  const items=provider.items.length?provider.items.map(item=>`<div class="component"><span class="component-name">${escapeHtml(item.name)}</span><span class="component-state ${escapeHtml(item.status)}"><i></i>${escapeHtml(pretty(item.status))}</span></div>`).join(''):'<div class="component"><span class="component-name">Official endpoint</span><span class="component-state"><i></i>No response</span></div>';
   return `<article class="card ${type}"><header class="card-head"><div class="card-title"><span class="card-icon">${provider.icon}</span><div><div class="card-eyebrow">${provider.vendor}</div><h2>${provider.name}</h2></div></div><span class="badge"><i></i>${stateLabel(provider.indicator)}</span></header><div class="components">${items}</div><footer class="card-foot"><span>Updated ${provider.updatedAt?formatTime(new Date(provider.updatedAt)):'unknown'}</span><a href="${provider.page}" target="_blank" rel="noreferrer">Status page ↗</a></footer></article>`;
  }).join('');
 }
@@ -148,11 +183,15 @@ async function check(){
  const providers=await Promise.all(SOURCES.map(async source=>{try{const response=await fetch(source.url,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();return{...source,...parseStatuspage(source,data)}}catch{return{...source,indicator:'unknown',updatedAt:null,items:[]}}}));
  const classes=providers.map(provider=>stateClass(provider.indicator));
  const overallEl=document.getElementById('overall'),iconEl=document.getElementById('overallIcon');
- if(classes.includes('danger')||classes.includes('unknown')){overallEl.textContent='Attention needed';overallEl.className='banner-value bad';iconEl.textContent='⚠';iconEl.className='banner-icon bad';}
- else if(classes.includes('warning')){overallEl.textContent='Degraded performance';overallEl.className='banner-value warn';iconEl.textContent='◐';iconEl.className='banner-icon warn';}
- else{overallEl.textContent='All systems operational';overallEl.className='banner-value ok';iconEl.textContent='●';iconEl.className='banner-icon ok';}
+ let tone,summary;
+ if(classes.includes('danger')||classes.includes('unknown')){tone='bad';summary='Attention needed';iconEl.textContent='⚠';}
+ else if(classes.includes('warning')){tone='warn';summary='Degraded performance';iconEl.textContent='◐';}
+ else{tone='ok';summary='All systems operational';iconEl.textContent='●';}
+ overallEl.textContent=summary;overallEl.className='banner-value '+tone;iconEl.className='banner-icon '+tone;
+ setBrowserStatus(tone,summary);
  document.getElementById('lastCheck').textContent=formatTime(new Date());
  seconds=60;
+ renderAlerts(providers);
  renderCards(providers);
  button.disabled=false;icon.className='';label.textContent='Refresh';
 }
