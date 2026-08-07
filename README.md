@@ -1,6 +1,6 @@
 # Status Zero
 
-Status Zero is a live public dashboard for monitoring the official service status of ChatGPT, Claude, Grok, Microsoft Copilot, and GitHub Copilot.
+Status Zero is a live public dashboard for monitoring the official service status of ChatGPT, Claude, Microsoft Copilot, and GitHub Copilot.
 
 ## Open the dashboard
 
@@ -46,10 +46,25 @@ pnpm test
 
 - OpenAI (ChatGPT): `https://status.openai.com/api/v2/summary.json`
 - Anthropic (Claude): `https://status.claude.com/api/v2/summary.json`
-- xAI (Grok): `https://status.x.ai/summary.json`
 - Microsoft (Copilot): `https://copilot.statuspage.io/api/v2/summary.json`
 - GitHub (Copilot): `https://www.githubstatus.com/api/v2/summary.json`
 
-Mistral AI (Le Chat) isn't included: `status.mistral.ai`'s public endpoint doesn't send an `Access-Control-Allow-Origin` header, so a browser can't read it cross-origin from this static site.
+All four run on Atlassian Statuspage, which serves its `summary.json` with
+permissive CORS headers — a hard requirement here, since this is a static site
+that fetches directly from the visitor's browser with no backend to proxy
+through.
 
-Status Zero is an independent monitor and is not affiliated with OpenAI, Anthropic, xAI, Microsoft, or GitHub.
+### Why Grok and Le Chat aren't listed
+
+Both were tried and removed. xAI (`status.x.ai`) and Mistral AI
+(`status.mistral.ai`) both run on Instatus, which does not serve status JSON
+cross-origin: Mistral's endpoint returns no `Access-Control-Allow-Origin`
+header, and xAI blocks its JSON endpoints outright, publishing only an RSS
+feed at `status.x.ai/feed.xml` that is subject to the same restriction.
+
+Adding either one back would require a server-side proxy (a Worker or
+serverless function) to fetch the feed and re-serve it with CORS headers.
+Nothing client-side can work around it.
+
+Status Zero is an independent monitor and is not affiliated with OpenAI,
+Anthropic, Microsoft, or GitHub.

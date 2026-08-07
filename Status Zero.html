@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Live status for ChatGPT, Claude, Grok, and Copilot.">
+<meta name="description" content="Live status for ChatGPT, Claude, and Copilot.">
 <meta property="og:title" content="Status Zero — AI Service Monitor">
-<meta property="og:description" content="Live status for ChatGPT, Claude, Grok, and Copilot.">
+<meta property="og:description" content="Live status for ChatGPT, Claude, and Copilot.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://thisisskay.github.io/status-zero/">
 <meta property="og:image" content="https://thisisskay.github.io/status-zero/public/status-zero-og.png">
@@ -15,7 +15,7 @@
 <meta property="og:image:alt" content="Status Zero ASCII terminal service monitor">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Status Zero — AI Service Monitor">
-<meta name="twitter:description" content="Live status for ChatGPT, Claude, Grok, and Copilot.">
+<meta name="twitter:description" content="Live status for ChatGPT, Claude, and Copilot.">
 <meta name="twitter:image" content="https://thisisskay.github.io/status-zero/public/status-zero-og.png">
 <title>Status Zero — AI Service Monitor</title>
 <style>
@@ -114,15 +114,16 @@ button,a{font:inherit}
   </footer>
 </div>
 <script>
+// Every provider here must serve its status JSON cross-origin (CORS), since
+// this page is static and fetches straight from the browser.
+// Deliberately absent: xAI (Grok) and Mistral AI (Le Chat). Both run on
+// Instatus, which does not serve status JSON cross-origin, so neither can be
+// read from a static page — see README.
 const SOURCES=[
- {id:'openai',kind:'statuspage',icon:'O',name:'ChatGPT',vendor:'OpenAI',url:'https://status.openai.com/api/v2/summary.json',page:'https://status.openai.com/',components:['Conversations','Login','Search','GPTs']},
- {id:'claude',kind:'statuspage',icon:'A',name:'Claude',vendor:'Anthropic',url:'https://status.claude.com/api/v2/summary.json',page:'https://status.claude.com/',components:['claude.ai','Claude API (api.anthropic.com)','Claude Code']},
- {id:'grok',kind:'instatus',icon:'X',name:'Grok',vendor:'xAI',url:'https://status.x.ai/summary.json',page:'https://status.x.ai/'},
- {id:'mscopilot',kind:'statuspage',icon:'Co',name:'Copilot',vendor:'Microsoft',url:'https://copilot.statuspage.io/api/v2/summary.json',page:'https://copilot.statuspage.io/',components:null},
- {id:'ghcopilot',kind:'statuspage',icon:'Gh',name:'GitHub Copilot',vendor:'GitHub',url:'https://www.githubstatus.com/api/v2/summary.json',page:'https://www.githubstatus.com/',components:['Copilot']}
- // Mistral AI (Le Chat) omitted: status.mistral.ai's summary.json has no
- // Access-Control-Allow-Origin header, so a browser can never read it
- // cross-origin from here — confirmed via a live console CORS error.
+ {id:'openai',icon:'O',name:'ChatGPT',vendor:'OpenAI',url:'https://status.openai.com/api/v2/summary.json',page:'https://status.openai.com/',components:['Conversations','Login','Search','GPTs']},
+ {id:'claude',icon:'A',name:'Claude',vendor:'Anthropic',url:'https://status.claude.com/api/v2/summary.json',page:'https://status.claude.com/',components:['claude.ai','Claude API (api.anthropic.com)','Claude Code']},
+ {id:'mscopilot',icon:'Co',name:'Copilot',vendor:'Microsoft',url:'https://copilot.statuspage.io/api/v2/summary.json',page:'https://copilot.statuspage.io/',components:null},
+ {id:'ghcopilot',icon:'Gh',name:'GitHub Copilot',vendor:'GitHub',url:'https://www.githubstatus.com/api/v2/summary.json',page:'https://www.githubstatus.com/',components:['Copilot']}
 ];
 let seconds=60;
 const stateClass=indicator=>indicator==='none'?'healthy':['minor','maintenance'].includes(indicator)?'warning':['major','critical'].includes(indicator)?'danger':'unknown';
@@ -134,26 +135,17 @@ function parseStatuspage(source,data){
  const resolved=source.components?source.components.map(name=>(data.components||[]).find(c=>c.name===name)).filter(Boolean):(data.components||[]).filter(c=>!c.group).slice(0,6);
  return{indicator:data.status?.indicator||'unknown',updatedAt:data.page?.updated_at||null,items:resolved.map(c=>({name:c.name,status:c.status}))};
 }
-// Instatus shape: {page:{status}, activeIncidents:[{name,impact,status,updatedAt}], activeMaintenances:[{name,updatedAt}]} — no component list.
-function parseInstatus(source,data){
- const incidents=data.activeIncidents||[],maintenances=data.activeMaintenances||[];
- const impactLabel=impact=>{const v=(impact||'').toUpperCase();return v.includes('MAJOR')||v.includes('CRITICAL')?'Major Outage':v.includes('PARTIAL')?'Partial Outage':v.includes('MINOR')||v.includes('DEGRADED')?'Degraded':'Investigating'};
- const indicator=incidents.length?(incidents.some(i=>/MAJOR|CRITICAL/.test((i.impact||'').toUpperCase()))?'major':'minor'):maintenances.length?'maintenance':(data.page?.status||'UP').toUpperCase()==='UP'?'none':'major';
- const items=incidents.length?incidents.map(i=>({name:i.name,status:'issue',label:impactLabel(i.impact||i.status)})):maintenances.length?maintenances.map(m=>({name:m.name,status:'maintenance',label:'Maintenance'})):[{name:'All monitors',status:'operational'}];
- const updatedAt=incidents[0]?.updatedAt||maintenances[0]?.updatedAt||new Date().toISOString();
- return{indicator,updatedAt,items};
-}
 function renderCards(providers){
  document.getElementById('cards').innerHTML=providers.map(provider=>{
   const type=stateClass(provider.indicator);
-  const items=provider.items.length?provider.items.map(item=>`<div class="component"><span class="component-name">${item.name}</span><span class="component-state ${item.status}"><i></i>${item.label||pretty(item.status)}</span></div>`).join(''):'<div class="component"><span class="component-name">Official endpoint</span><span class="component-state"><i></i>No response</span></div>';
+  const items=provider.items.length?provider.items.map(item=>`<div class="component"><span class="component-name">${item.name}</span><span class="component-state ${item.status}"><i></i>${pretty(item.status)}</span></div>`).join(''):'<div class="component"><span class="component-name">Official endpoint</span><span class="component-state"><i></i>No response</span></div>';
   return `<article class="card ${type}"><header class="card-head"><div class="card-title"><span class="card-icon">${provider.icon}</span><div><div class="card-eyebrow">${provider.vendor}</div><h2>${provider.name}</h2></div></div><span class="badge"><i></i>${stateLabel(provider.indicator)}</span></header><div class="components">${items}</div><footer class="card-foot"><span>Updated ${provider.updatedAt?formatTime(new Date(provider.updatedAt)):'unknown'}</span><a href="${provider.page}" target="_blank" rel="noreferrer">Status page ↗</a></footer></article>`;
  }).join('');
 }
 async function check(){
  const button=document.getElementById('refresh'),icon=document.getElementById('refreshIcon'),label=document.getElementById('refreshText');
  button.disabled=true;icon.className='spin';label.textContent='Checking…';
- const providers=await Promise.all(SOURCES.map(async source=>{try{const response=await fetch(source.url,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();const parsed=source.kind==='instatus'?parseInstatus(source,data):parseStatuspage(source,data);return{...source,...parsed}}catch{return{...source,indicator:'unknown',updatedAt:null,items:[]}}}));
+ const providers=await Promise.all(SOURCES.map(async source=>{try{const response=await fetch(source.url,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();return{...source,...parseStatuspage(source,data)}}catch{return{...source,indicator:'unknown',updatedAt:null,items:[]}}}));
  const classes=providers.map(provider=>stateClass(provider.indicator));
  const overallEl=document.getElementById('overall'),iconEl=document.getElementById('overallIcon');
  if(classes.includes('danger')||classes.includes('unknown')){overallEl.textContent='Attention needed';overallEl.className='banner-value bad';iconEl.textContent='⚠';iconEl.className='banner-icon bad';}
